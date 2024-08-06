@@ -34,6 +34,10 @@ public class CheckoutServiceImpl implements CheckoutService {
         Order order = orderRepository.findById(request.getOrderId())
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
+        if (checkoutRepository.existsByOrder(order)) {
+            throw new RuntimeException("Checkout already exists");
+        }
+
         Cart cart = order.getCart();
 
         List<CartItem> items = cart.getItems();
@@ -56,9 +60,7 @@ public class CheckoutServiceImpl implements CheckoutService {
         checkout.setDate(LocalDateTime.now());
         checkoutRepository.save(checkout);
 
-        if (order.getId().equals(checkout.getOrder().getId())) {
-            throw new RuntimeException("Order in progress");
-        }
+
 
         cartItemRepository.deleteAll(items);
 

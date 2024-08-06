@@ -4,10 +4,12 @@ import com.metaphorce.commonslib.dto.CreateOrderRequest;
 import com.metaphorce.commonslib.dto.CreateOrderResponse;
 import com.metaphorce.commonslib.dto.OrderDto;
 import com.metaphorce.commonslib.dto.ProductDto;
+import com.metaphorce.commonslib.entities.CartItem;
 import com.metaphorce.commonslib.entities.PaymentMethod;
 import com.metaphorce.commonslib.entities.Cart;
 import com.metaphorce.commonslib.entities.Order;
 import com.metaphorce.product.mapper.GlobalMapper;
+import com.metaphorce.product.repository.CartItemRepository;
 import com.metaphorce.product.repository.PaymentMethodRepository;
 import com.metaphorce.product.repository.CartRepository;
 import com.metaphorce.product.repository.OrderRepository;
@@ -28,6 +30,10 @@ public class OrderServiceImpl implements OrderService{
     @Autowired
     private CartRepository cartRepository;
 
+
+    @Autowired
+    private CartItemRepository cartItemRepository;
+
     @Autowired
     private PaymentMethodRepository paymentMethodRepository;
 
@@ -40,6 +46,8 @@ public class OrderServiceImpl implements OrderService{
 
         Cart cart = cartRepository.findById(request.getCartId()).get();
 
+        List<CartItem> items = cart.getItems();
+
         Order order = new Order();
         order.setCart(cart);
         order.setTotalToPay(cart.getItems().stream()
@@ -47,6 +55,9 @@ public class OrderServiceImpl implements OrderService{
                         .multiply(BigDecimal.valueOf(e.getQuantity()))).reduce(BigDecimal.ZERO, BigDecimal::add));
         order.setDate(LocalDateTime.now());
         orderRepository.save(order);
+
+        //cartItemRepository.deleteAll(items);
+
 
         Long orderId = order.getId();
         CreateOrderResponse createOrderResponse = new CreateOrderResponse();
