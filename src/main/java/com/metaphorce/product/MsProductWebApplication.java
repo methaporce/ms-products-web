@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 
 @SpringBootApplication
-@EntityScan(basePackages = "com.metaphorce.commonslib")
+@EntityScan(basePackages = "com.metaphorce.commonslib.*")
 public class MsProductWebApplication {
 
 	public static void main(String[] args) {
