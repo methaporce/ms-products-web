@@ -2,14 +2,12 @@ package com.metaphorce.product.service;
 
 import com.metaphorce.commonslib.dto.ProcessCheckoutRequest;
 import com.metaphorce.commonslib.entities.*;
-import com.metaphorce.product.repository.CartItemRepository;
-import com.metaphorce.product.repository.ProductRepository;
-import com.metaphorce.product.repository.CheckoutRepository;
-import com.metaphorce.product.repository.OrderRepository;
+import com.metaphorce.product.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.math.BigDecimal;
+
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class CheckoutServiceImpl implements CheckoutService {
@@ -26,46 +24,44 @@ public class CheckoutServiceImpl implements CheckoutService {
     @Autowired
     private CartItemRepository cartItemRepository;
 
-    @Override
-    public void processCheckout(ProcessCheckoutRequest request) {
+    @Autowired
+    private CartRepository cartRepository;
 
-        /*
+
+    @Override
+    public Cart processCheckout(ProcessCheckoutRequest request) {
 
         Order order = orderRepository.findById(request.getOrderId())
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
         Cart cart = order.getCart();
 
-        CartItem cartItem = cartItemRepository.findById(cart.getId())
-                .orElseThrow(() -> new RuntimeException("Cart item not found"));
+        List<CartItem> items = cart.getItems();
 
-        Product product = cartItem.getProduct();
+        for (CartItem item : items) {
 
-        // cart item tiene una lista de productos y cantidades
-
-        for (CartItem item : cart.getItems()) {
-
-            if (item.getQuantity() > product.getStock()) {
+            if (item.getQuantity() > item.getProduct().getStock()) {
                 throw new RuntimeException("Insufficient stock");
             }
 
+            item.getProduct().setStock(item.getProduct().getStock() - item.getQuantity());
+            productRepository.save(item.getProduct());
+
         }
-
-
-
-        product.setStock(product.getStock() - cart.getQuantity());
-        productRepository.save(product);
 
         Checkout checkout = new Checkout();
         checkout.setOrder(order);
-        checkout.setTotalToPay(product.getPrice().multiply(BigDecimal.valueOf(cart.getQuantity())));
-        checkout.setStatus(Checkout.StatusEnum.COMPLETED); // TODO change to enum
+        checkout.setTotalToPay(order.getTotalToPay());
+        checkout.setStatus(Checkout.StatusEnum.IN_PROGRESS);
         checkout.setDate(LocalDateTime.now());
-
         checkoutRepository.save(checkout);
 
-         */
+        if (order.getId().equals(checkout.getOrder().getId())) {
+            throw new RuntimeException("Order in progress");
+        }
 
+        cartItemRepository.deleteAll(items);
 
+        return cart;
     }
 }

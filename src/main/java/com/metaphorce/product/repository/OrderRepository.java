@@ -18,4 +18,5 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             "WHERE o.id = :orderId",
             nativeQuery = true)
     List<Object[]> getProductsByOrderId(@Param("orderId") Long orderId);
+
 }

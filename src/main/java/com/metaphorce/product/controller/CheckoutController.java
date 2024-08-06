@@ -1,6 +1,7 @@
 package com.metaphorce.product.controller;
 
 import com.metaphorce.commonslib.dto.ProcessCheckoutRequest;
+import com.metaphorce.commonslib.entities.Cart;
 import com.metaphorce.product.service.CheckoutServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +22,10 @@ public class CheckoutController {
     private CheckoutServiceImpl checkoutService;
 
     @PostMapping("/process")
-    public ResponseEntity<String> processCheckout(@RequestBody ProcessCheckoutRequest request) {
+    public ResponseEntity<Cart> processCheckout(@RequestBody ProcessCheckoutRequest request) {
 
-        checkoutService.processCheckout(request);
-        return ResponseEntity.ok("Checkout completed successfully");
+
+        Cart cart = checkoutService.processCheckout(request);
+        return ResponseEntity.ok(cart);
     }
 }
