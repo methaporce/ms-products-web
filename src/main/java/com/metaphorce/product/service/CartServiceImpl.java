@@ -93,7 +93,7 @@ public class CartServiceImpl implements CartService {
         List<Object[]> rawItems = cartItemRepository.getCartItems(cardId);
 
         return rawItems.stream()
-                .map(item -> GlobalMapper.INSTANCE.toDto(
+                .map(item -> GlobalMapper.INSTANCE.toCartItemDto(
                         (Long) item[0],
                         (String) item[1],
                         (String) item[2],
