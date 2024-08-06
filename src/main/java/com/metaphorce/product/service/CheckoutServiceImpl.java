@@ -29,7 +29,7 @@ public class CheckoutServiceImpl implements CheckoutService {
 
 
     @Override
-    public Cart processCheckout(ProcessCheckoutRequest request) {
+    public void processCheckout(ProcessCheckoutRequest request) {
 
         Order order = orderRepository.findById(request.getOrderId())
                 .orElseThrow(() -> new RuntimeException("Order not found"));
@@ -64,6 +64,5 @@ public class CheckoutServiceImpl implements CheckoutService {
 
         cartItemRepository.deleteAll(items);
 
-        return cart;
     }
 }

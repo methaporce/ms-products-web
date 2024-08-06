@@ -22,10 +22,10 @@ public class CheckoutController {
     private CheckoutServiceImpl checkoutService;
 
     @PostMapping("/process")
-    public ResponseEntity<Cart> processCheckout(@RequestBody ProcessCheckoutRequest request) {
+    public ResponseEntity processCheckout(@RequestBody ProcessCheckoutRequest request) {
 
 
-        Cart cart = checkoutService.processCheckout(request);
-        return ResponseEntity.ok(cart);
+        checkoutService.processCheckout(request);
+        return ResponseEntity.accepted().build();
     }
 }
