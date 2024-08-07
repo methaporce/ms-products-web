@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
@@ -19,6 +20,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             nativeQuery = true)
     List<Object[]> getProductsByOrderId(@Param("orderId") Long orderId);
 
-    boolean findByCartId(Long cartId);
+    Optional<Order> findByCartId(Long cartId);
 
 }

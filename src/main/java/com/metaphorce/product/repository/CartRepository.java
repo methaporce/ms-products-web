@@ -12,7 +12,10 @@ import java.util.Optional;
 @Repository
 public interface CartRepository extends JpaRepository<Cart, Long> {
 
-    Optional<Cart> findByUserId(Long userId);
-
+    @Query(value = "SELECT c.id, c.users_id, c.active, c.deleted " +
+            "FROM cart c " +
+            "WHERE c.users_id = :userId AND c.active = true AND c.deleted = false",
+            nativeQuery = true)
+    Optional<Cart> findByUserIdAndIsActive (Long userId);
 
 }

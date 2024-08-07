@@ -1,11 +1,14 @@
 package com.metaphorce.product.service;
 
 import com.metaphorce.commonslib.dto.ProcessCheckoutRequest;
+import com.metaphorce.commonslib.dto.ProcessCheckoutResponse;
+import com.metaphorce.commonslib.dto.ProductDto;
 import com.metaphorce.commonslib.entities.*;
 import com.metaphorce.product.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -57,23 +60,39 @@ public class CheckoutServiceImpl implements CheckoutService {
         Checkout checkout = new Checkout();
         checkout.setOrder(order);
         checkout.setTotalToPay(order.getTotalToPay());
-        checkout.setStatus(Checkout.StatusEnum.IN_PROGRESS);
+        checkout.setStatus(Checkout.CheckoutStatusEnum.IN_PROGRESS);
         checkout.setDate(LocalDateTime.now());
         checkoutRepository.save(checkout);
 
-
-
-        cartItemRepository.deleteAll(items);
     }
 
 
     @Override
-    public Checkout getOrderCheckout(Long id) {
+    public ProcessCheckoutResponse getOrderCheckout(Long id) {
 
         Optional<Checkout> checkout = checkoutRepository.findById(id);
 
         if (checkout.isPresent()) {
-            return checkout.get();
+            ProcessCheckoutResponse checkoutResponse = new ProcessCheckoutResponse();
+
+            checkoutResponse.setTotalToPay(checkout.get().getTotalToPay());
+            checkoutResponse.setIdCheckout(checkout.get().getId());
+            checkoutResponse.setCheckoutStatus(String.valueOf(checkout.get().getStatus()));
+            checkoutResponse.setOrderId(checkout.get().getOrder().getId());
+            checkoutResponse.setCartId(checkout.get().getOrder().getCart().getId());
+            checkoutResponse.setUserId(checkout.get().getOrder().getCart().getUser().getId());
+            checkoutResponse.setProducts(checkout.get().getOrder().getCart().getItems().stream().map(cartItem -> {
+                ProductDto productDto = new ProductDto();
+                productDto.setProductId(cartItem.getProduct().getId());
+                productDto.setProductPathImage(cartItem.getProduct().getPathImage());
+                productDto.setProductName(cartItem.getProduct().getName());
+                productDto.setProductPrice(cartItem.getProduct().getPrice());
+                productDto.setProductQuantity(cartItem.getQuantity());
+
+                return productDto;
+            }).toList());
+
+            return checkoutResponse;
         } else {
             throw new RuntimeException("Checkout not found");
         }

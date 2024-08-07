@@ -4,10 +4,7 @@ import com.metaphorce.commonslib.dto.CreateOrderRequest;
 import com.metaphorce.commonslib.dto.CreateOrderResponse;
 import com.metaphorce.commonslib.dto.OrderDto;
 import com.metaphorce.commonslib.dto.ProductDto;
-import com.metaphorce.commonslib.entities.CartItem;
-import com.metaphorce.commonslib.entities.PaymentMethod;
-import com.metaphorce.commonslib.entities.Cart;
-import com.metaphorce.commonslib.entities.Order;
+import com.metaphorce.commonslib.entities.*;
 import com.metaphorce.product.mapper.GlobalMapper;
 import com.metaphorce.product.repository.CartItemRepository;
 import com.metaphorce.product.repository.PaymentMethodRepository;
@@ -49,15 +46,27 @@ public class OrderServiceImpl implements OrderService{
         List<CartItem> items = cart.getItems();
 
         Order order = new Order();
+
+        cart.setDeleted(true);
+        cart.setActive(false);
+
+        cartRepository.save(cart);
+
         order.setCart(cart);
+
         order.setTotalToPay(cart.getItems().stream()
-                .map(e -> e.getProduct().getPrice()
-                        .multiply(BigDecimal.valueOf(e.getQuantity()))).reduce(BigDecimal.ZERO, BigDecimal::add));
+
+                .map(e ->
+                        e.getProduct()
+                                .getPrice()
+                                .multiply(BigDecimal.valueOf(e.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add));
+
         order.setDate(LocalDateTime.now());
+        Users user = cart.getUser();
+        order.setUsers(user);
+        order.setOrderStatus(Order.OrderStatusEnum.INITIAL);
         orderRepository.save(order);
-
-        //cartItemRepository.deleteAll(items);
-
 
         Long orderId = order.getId();
         CreateOrderResponse createOrderResponse = new CreateOrderResponse();

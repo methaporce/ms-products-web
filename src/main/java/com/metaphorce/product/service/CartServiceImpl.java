@@ -11,7 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -45,20 +47,39 @@ public class CartServiceImpl implements CartService {
             throw new RuntimeException("Insufficient stock");
         }
 
-        Cart cart = cartRepository.findByUserId(request.getUserId())
+        Optional<Cart> cartUserOpt = cartRepository.findByUserIdAndIsActive(user.getId());
 
-                .orElseGet(() -> {
+        Cart cart ;
+        if (cartUserOpt.isPresent() && cartUserOpt.get().getActive()) {
 
-                    Cart newCart = new Cart();
-                    newCart.setUser(user);
-                    return cartRepository.save(newCart);
+            cart = cartUserOpt.get();
 
-                });
+            Optional<Order> orderOpt = orderRepository.findByCartId(cart.getId());
 
-        CartItem cartItem = cartItemRepository.findByCartIdAndProductId(cart.getId(), request.getProductId())
+            if (orderOpt.isPresent()) {
+
+                // Si hay una orden, no crear uno nuevo
+                cart = new Cart();
+                cart.setUser(user);
+                cart.setActive(true);
+                cart.setDeleted(false);
+                cartRepository.save(cart);
+            }
+        } else {
+            // Si no hay carrito, crear uno nuevo
+            cart = new Cart();
+            cart.setUser(user);
+            cart.setActive(true);
+            cart.setDeleted(false);
+            cartRepository.save(cart);
+        }
+
+        Cart finalCart = cart;
+
+        CartItem cartItem = cartItemRepository.findByCartIdAndProductId(cart.getId(), product.getId())
                 .orElseGet(() -> {
                     CartItem newItem = new CartItem();
-                    newItem.setCart(cart);
+                    newItem.setCart(finalCart);
                     newItem.setProduct(product);
                     newItem.setQuantity(0);
                     return newItem;
@@ -68,18 +89,18 @@ public class CartServiceImpl implements CartService {
         cartItemRepository.save(cartItem);
 
         AddToCartResponse addToCartResponse = new AddToCartResponse();
-
         addToCartResponse.setCartId(cart.getId());
-        addToCartResponse.setUserId(cart.getUser().getId());
+        addToCartResponse.setUserId(user.getId());
         addToCartResponse.setCategoryId(product.getCategory().getId());
         addToCartResponse.setCategoryName(product.getCategory().getName());
         addToCartResponse.setProductId(product.getId());
         addToCartResponse.setProductName(product.getName());
         addToCartResponse.setProductPrice(product.getPrice());
-        addToCartResponse.setProductTotal(product.getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity())));
+        addToCartResponse.setProductTotal(product.getPrice().multiply(BigDecimal.valueOf(request.getQuantity())));
         addToCartResponse.setProductImage(product.getPathImage());
         addToCartResponse.setProductStock(product.getStock());
-        addToCartResponse.setQuantity(cartItem.getQuantity());
+        addToCartResponse.setQuantity(request.getQuantity());
+
 
         return addToCartResponse;
     }

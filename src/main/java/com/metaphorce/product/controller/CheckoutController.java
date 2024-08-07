@@ -1,6 +1,7 @@
 package com.metaphorce.product.controller;
 
 import com.metaphorce.commonslib.dto.ProcessCheckoutRequest;
+import com.metaphorce.commonslib.dto.ProcessCheckoutResponse;
 import com.metaphorce.commonslib.entities.Cart;
 import com.metaphorce.commonslib.entities.Checkout;
 import com.metaphorce.product.service.CheckoutServiceImpl;
@@ -28,9 +29,9 @@ public class CheckoutController {
     }
 
     @GetMapping("/getOrderCheckout")
-    public ResponseEntity<Checkout> getOrderCheckout(@RequestParam Long id) {
+    public ResponseEntity<ProcessCheckoutResponse> getOrderCheckout(@RequestParam Long id) {
 
-        Checkout checkout = checkoutService.getOrderCheckout(id);
+        ProcessCheckoutResponse checkout = checkoutService.getOrderCheckout(id);
 
         return ResponseEntity.ok(checkout);
     }
