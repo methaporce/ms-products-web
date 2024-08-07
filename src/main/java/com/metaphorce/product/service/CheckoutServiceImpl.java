@@ -32,6 +32,18 @@ public class CheckoutServiceImpl implements CheckoutService {
     @Autowired
     private CartRepository cartRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private UserLocationRepository userLocationRepository;
+
+    @Autowired
+    private PaymentMethodRepository paymentMethodRepository;
+
+    @Autowired
+    private CardRepository cardRepository;
+
 
     @Override
     public void processCheckout(ProcessCheckoutRequest request) {
@@ -58,12 +70,45 @@ public class CheckoutServiceImpl implements CheckoutService {
 
         }
 
+        PaymentMethod paymentMethod = paymentMethodRepository.getReferenceById(request.getPaymentMethodId());
+
+        Card card = new Card();
+        card.setUser(cart.getUser());
+        card.setCardNumber(request.getCardUser().getCardNumber());
+        card.setPaymentMethod(paymentMethod);
+        card.setExpiration(request.getCardUser().getExpiration());
+        card.setCvv(request.getCardUser().getCvv());
+
+        cardRepository.save(card);
+
+        cartRepository.save(cart);
+
+        Users user = cart.getUser();
+        user.setPhone(request.getPhoneUser());
+        userRepository.save(user);
+
+        UserLocation userLocation = new UserLocation();
+        userLocation.setAddress(request.getUserLocation().getAddress());
+        userLocation.setCity(request.getUserLocation().getCity());
+        userLocation.setCountry(request.getUserLocation().getCountry());
+        userLocation.setPostalCode(request.getUserLocation().getPostalCode());
+        userLocation.setState(request.getUserLocation().getState());
+        userLocation.setUser(user);
+
+        userLocationRepository.save(userLocation);
+
         Checkout checkout = new Checkout();
         checkout.setOrder(order);
-        checkout.setTotalToPay(order.getTotalToPay());
+        checkout.setTotalPaid(order.getTotalToPay());
         checkout.setStatus(Checkout.CheckoutStatusEnum.IN_PROGRESS);
         checkout.setDate(LocalDateTime.now());
+        checkout.setCardUser(card);
+        checkout.setPaymentMethod(paymentMethod);
         checkoutRepository.save(checkout);
+
+        Order updatedOrder = orderRepository.getReferenceById(order.getId());
+        updatedOrder.setOrderStatus(Order.OrderStatusEnum.WAITING);
+        orderRepository.save(updatedOrder);
 
     }
 
@@ -76,7 +121,7 @@ public class CheckoutServiceImpl implements CheckoutService {
         if (checkout.isPresent()) {
             ProcessCheckoutResponse checkoutResponse = new ProcessCheckoutResponse();
 
-            checkoutResponse.setTotalToPay(checkout.get().getTotalToPay());
+            checkoutResponse.setTotalToPay(checkout.get().getTotalPaid());
             checkoutResponse.setDate(checkout.get().getDate());
             checkoutResponse.setIdCheckout(checkout.get().getId());
             checkoutResponse.setCheckoutStatus(String.valueOf(checkout.get().getStatus()));
