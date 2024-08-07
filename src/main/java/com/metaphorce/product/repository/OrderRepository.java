@@ -19,4 +19,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             nativeQuery = true)
     List<Object[]> getProductsByOrderId(@Param("orderId") Long orderId);
 
+    boolean findByCartId(Long cartId);
+
 }

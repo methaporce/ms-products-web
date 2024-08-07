@@ -3,15 +3,9 @@ package com.metaphorce.product.service;
 import com.metaphorce.commonslib.dto.AddToCartRequest;
 import com.metaphorce.commonslib.dto.AddToCartResponse;
 import com.metaphorce.commonslib.dto.CartItemDto;
-import com.metaphorce.commonslib.entities.Cart;
-import com.metaphorce.commonslib.entities.CartItem;
-import com.metaphorce.commonslib.entities.Product;
-import com.metaphorce.commonslib.entities.Users;
+import com.metaphorce.commonslib.entities.*;
 import com.metaphorce.product.mapper.GlobalMapper;
-import com.metaphorce.product.repository.CartItemRepository;
-import com.metaphorce.product.repository.ProductRepository;
-import com.metaphorce.product.repository.CartRepository;
-import com.metaphorce.product.repository.UserRepository;
+import com.metaphorce.product.repository.*;
 import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,6 +28,9 @@ public class CartServiceImpl implements CartService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private OrderRepository orderRepository;
 
     @Override
     public AddToCartResponse addToCart(AddToCartRequest request) {

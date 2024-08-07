@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CheckoutServiceImpl implements CheckoutService {
@@ -63,6 +64,18 @@ public class CheckoutServiceImpl implements CheckoutService {
 
 
         cartItemRepository.deleteAll(items);
+    }
 
+
+    @Override
+    public Checkout getOrderCheckout(Long id) {
+
+        Optional<Checkout> checkout = checkoutRepository.findById(id);
+
+        if (checkout.isPresent()) {
+            return checkout.get();
+        } else {
+            throw new RuntimeException("Checkout not found");
+        }
     }
 }
