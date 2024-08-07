@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -76,6 +77,7 @@ public class CheckoutServiceImpl implements CheckoutService {
             ProcessCheckoutResponse checkoutResponse = new ProcessCheckoutResponse();
 
             checkoutResponse.setTotalToPay(checkout.get().getTotalToPay());
+            checkoutResponse.setDate(checkout.get().getDate());
             checkoutResponse.setIdCheckout(checkout.get().getId());
             checkoutResponse.setCheckoutStatus(String.valueOf(checkout.get().getStatus()));
             checkoutResponse.setOrderId(checkout.get().getOrder().getId());
