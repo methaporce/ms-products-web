@@ -9,4 +9,6 @@ import java.util.Optional;
 public interface UserLocationRepository extends JpaRepository<UserLocation, Long> {
 
     Optional<List<UserLocation>> findByUserId(Long userId);
+
+
 }

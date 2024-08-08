@@ -70,39 +70,25 @@ public class CheckoutServiceImpl implements CheckoutService {
 
         }
 
-        PaymentMethod paymentMethod = paymentMethodRepository.getReferenceById(request.getPaymentMethodId());
-
-        Card card = new Card();
-        card.setUser(cart.getUser());
-        card.setCardNumber(request.getCardUser().getCardNumber());
-        card.setPaymentMethod(paymentMethod);
-        card.setExpiration(request.getCardUser().getExpiration());
-        card.setCvv(request.getCardUser().getCvv());
-
-        cardRepository.save(card);
-
-        cartRepository.save(cart);
-
         Users user = cart.getUser();
         user.setPhone(request.getPhoneUser());
         userRepository.save(user);
 
-        UserLocation userLocation = new UserLocation();
-        userLocation.setAddress(request.getUserLocation().getAddress());
-        userLocation.setCity(request.getUserLocation().getCity());
-        userLocation.setCountry(request.getUserLocation().getCountry());
-        userLocation.setPostalCode(request.getUserLocation().getPostalCode());
-        userLocation.setState(request.getUserLocation().getState());
-        userLocation.setUser(user);
-
+        Optional<List<UserLocation>> locations = userLocationRepository.findByUserId(user.getId());
+        UserLocation userLocation = getUserLocation(request, locations, user);
         userLocationRepository.save(userLocation);
+
+        PaymentMethod paymentMethod = paymentMethodRepository.getReferenceById(request.getPaymentMethodId());
+
+        Optional<List<Card>> listCards = cardRepository.findByUserId(cart.getUser().getId());
+        Card newCardUSer = getCardUser(request, listCards, user);
 
         Checkout checkout = new Checkout();
         checkout.setOrder(order);
         checkout.setTotalPaid(order.getTotalToPay());
         checkout.setStatus(Checkout.CheckoutStatusEnum.IN_PROGRESS);
         checkout.setDate(LocalDateTime.now());
-        checkout.setCardUser(card);
+        checkout.setCardUser(newCardUSer);
         checkout.setPaymentMethod(paymentMethod);
         checkoutRepository.save(checkout);
 
@@ -110,6 +96,61 @@ public class CheckoutServiceImpl implements CheckoutService {
         updatedOrder.setOrderStatus(Order.OrderStatusEnum.WAITING);
         orderRepository.save(updatedOrder);
 
+    }
+
+    private Card getCardUser(ProcessCheckoutRequest request, Optional<List<Card>> listCards, Users user) {
+        Card newCardUSer = new Card();
+
+        if (listCards.isPresent()) {
+            for (Card card : listCards.get()) {
+                if (card.getCardNumber().equals(request.getCardUser().getCardNumber())) {
+                    newCardUSer = card;
+                    break;
+                }
+            }
+        }
+        if (newCardUSer.getId() == null) {
+            Optional<PaymentMethod> paymentMethod = paymentMethodRepository.findById(request.getPaymentMethodId());
+
+            newCardUSer.setCardNumber(request.getCardUser().getCardNumber());
+            newCardUSer.setCvv(request.getCardUser().getCvv());
+            newCardUSer.setExpiration(request.getCardUser().getExpiration());
+            newCardUSer.setPaymentMethod(paymentMethod.get());
+            newCardUSer.setUser(user);
+            cardRepository.save(newCardUSer);
+        }
+        return newCardUSer;
+    }
+
+    private static UserLocation getUserLocation(ProcessCheckoutRequest request, Optional<List<UserLocation>> locations, Users user) {
+        UserLocation userLocation = new UserLocation();
+
+        if (locations.isPresent()) {
+
+            for (UserLocation location : locations.get()) {
+
+                if (location.getAddress().equals(request.getUserLocation().getAddress())
+                        && location.getCity().equals(request.getUserLocation().getCity())
+                        && location.getCountry().equals(request.getUserLocation().getCountry())
+                        && location.getPostalCode().equals(request.getUserLocation().getPostalCode())
+                        && location.getState().equals(request.getUserLocation().getState())) {
+
+                    userLocation = location;
+                    break;
+                }
+            }
+        }
+
+        if (userLocation.getIdLocation() == null) {
+            userLocation.setUser(user);
+            userLocation.setAddress(request.getUserLocation().getAddress());
+            userLocation.setCity(request.getUserLocation().getCity());
+            userLocation.setCountry(request.getUserLocation().getCountry());
+            userLocation.setPostalCode(request.getUserLocation().getPostalCode());
+            userLocation.setState(request.getUserLocation().getState());
+        }
+
+        return userLocation;
     }
 
 
