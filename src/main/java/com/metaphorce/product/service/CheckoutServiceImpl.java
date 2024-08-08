@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class CheckoutServiceImpl implements CheckoutService {
@@ -155,32 +156,40 @@ public class CheckoutServiceImpl implements CheckoutService {
 
 
     @Override
-    public ProcessCheckoutResponse getOrderCheckout(Long id) {
+    public  List<ProcessCheckoutResponse> getOrderCheckout(Long id) {
+        List<ProcessCheckoutResponse> checkoutResponses = new ArrayList<>();
 
-        Optional<Checkout> checkout = checkoutRepository.findById(id);
+         List<Checkout> checkouts = checkoutRepository.findAll(); //TO DO: implement get all checkout by user id
 
-        if (checkout.isPresent()) {
-            ProcessCheckoutResponse checkoutResponse = new ProcessCheckoutResponse();
+        //Optional<Checkout> checkout = checkoutRepository.findById(id);
 
-            checkoutResponse.setTotalToPay(checkout.get().getTotalPaid());
-            checkoutResponse.setDate(checkout.get().getDate());
-            checkoutResponse.setIdCheckout(checkout.get().getId());
-            checkoutResponse.setCheckoutStatus(String.valueOf(checkout.get().getStatus()));
-            checkoutResponse.setOrderId(checkout.get().getOrder().getId());
-            checkoutResponse.setCartId(checkout.get().getOrder().getCart().getId());
-            checkoutResponse.setUserId(checkout.get().getOrder().getCart().getUser().getId());
-            checkoutResponse.setProducts(checkout.get().getOrder().getCart().getItems().stream().map(cartItem -> {
-                ProductDto productDto = new ProductDto();
-                productDto.setProductId(cartItem.getProduct().getId());
-                productDto.setProductPathImage(cartItem.getProduct().getPathImage());
-                productDto.setProductName(cartItem.getProduct().getName());
-                productDto.setProductPrice(cartItem.getProduct().getPrice());
-                productDto.setProductQuantity(cartItem.getQuantity());
+        if (!checkouts.isEmpty()) {
 
-                return productDto;
-            }).toList());
+            for (Checkout checkout : checkouts) {
 
-            return checkoutResponse;
+                ProcessCheckoutResponse checkoutResponse = new ProcessCheckoutResponse();
+                checkoutResponse.setTotalToPay(checkout.getTotalPaid());
+                checkoutResponse.setDate(checkout.getDate());
+                checkoutResponse.setIdCheckout(checkout.getId());
+                checkoutResponse.setCheckoutStatus(String.valueOf(checkout.getStatus()));
+                checkoutResponse.setOrderId(checkout.getOrder().getId());
+                checkoutResponse.setCartId(checkout.getOrder().getCart().getId());
+                checkoutResponse.setUserId(checkout.getOrder().getCart().getUser().getId());
+                checkoutResponse.setProducts(checkout.getOrder().getCart().getItems().stream().map(cartItem -> {
+                    ProductDto productDto = new ProductDto();
+                    productDto.setProductId(cartItem.getProduct().getId());
+                    productDto.setProductPathImage(cartItem.getProduct().getPathImage());
+                    productDto.setProductName(cartItem.getProduct().getName());
+                    productDto.setProductPrice(cartItem.getProduct().getPrice());
+                    productDto.setProductQuantity(cartItem.getQuantity());
+
+
+                    return productDto;
+                }).collect(Collectors.toList()));
+                checkoutResponses.add(checkoutResponse);
+            }
+
+            return checkoutResponses;
         } else {
             throw new RuntimeException("Checkout not found");
         }
