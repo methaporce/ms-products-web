@@ -55,7 +55,7 @@ Este es un proyecto de E-commerce desarrollado con Angular en el frontend y Spri
 1. **Clona el repositorio**:
 
     ```bash
-    git clone https://github.com/tu-usuario/proyecto-ecommerce.git
+    git clone [https://github.com/tu-usuario/proyecto-ecommerce.git](https://github.com/methaporce/ms-products-web.git)
     cd proyecto-ecommerce/backend
     ```
 
@@ -64,8 +64,8 @@ Este es un proyecto de E-commerce desarrollado con Angular en el frontend y Spri
 
     ```properties
     spring.datasource.url=jdbc:mysql://localhost:3306/ecommerce_db
-    spring.datasource.username=tu-usuario
-    spring.datasource.password=tu-contraseña
+    spring.datasource.username=usuario
+    spring.datasource.password=contraseña
     spring.jpa.hibernate.ddl-auto=update
     ```
 
